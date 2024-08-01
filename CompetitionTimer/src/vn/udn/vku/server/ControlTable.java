@@ -60,6 +60,7 @@ public class ControlTable extends JPanel {
 		JButton jbtStopQuestion = new JButton("Stop");
 		pnQuestionTimer.add(jbtStopQuestion);
 		add(pnQuestionTimer);
+		//Test
 	}
 	public static void main(String agrs[]) {
 		JFrame fr = new JFrame();
