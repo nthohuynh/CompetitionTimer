@@ -98,7 +98,7 @@ public class ControlTable extends JPanel {
 		Border questionBorder = BorderFactory.createLineBorder(Color.RED);
 		TitledBorder questionTitleBorder = BorderFactory.createTitledBorder(questionBorder, "Question");
 		pnQuestionTimer.setBorder(questionTitleBorder);
-		pnQuestionTimer.setLayout(new GridLayout(2,1));
+		pnQuestionTimer.setLayout(new GridLayout(3,1));
 		
 		jlbQuestionTime = new JLabel("Question time here");
 		pnQuestionTimer.add(jlbQuestionTime);
@@ -115,13 +115,21 @@ public class ControlTable extends JPanel {
 			}
 		});
 		
+		JButton jbtReset = new JButton("Reset");
+		pnQuestionTimer.add(jbtReset);
+		jbtReset.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				
+					oos.println("reset");
+				
+			}
+		});
+		
+		
 		add(pnQuestionTimer);
 		//Test dsd  fsdd
 	}
-	public static void main(String agrs[]) {
-		JFrame fr = new JFrame();
-		fr.setSize(600,200);
-		fr.add(new ControlTable(null,null));
-		fr.setVisible(true);
-	}
+	
 }

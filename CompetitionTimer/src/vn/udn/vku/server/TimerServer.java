@@ -23,6 +23,7 @@ public class TimerServer {
 			ControlTable x = new ControlTable(out, in);
 			fr.add(x);
 			fr.setVisible(true);
+			fr.setLocationRelativeTo(null);
 
 			ServerSocket s = new ServerSocket(8189);
 

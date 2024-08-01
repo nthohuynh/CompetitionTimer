@@ -1,18 +1,17 @@
 package vn.udn.vku.client;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 
 class UserClock implements Runnable {
 	private JLabel labelClock;
@@ -31,7 +30,10 @@ class UserClock implements Runnable {
 		this.presentationMinutes = presentationMinutes - 1;
 		
 	}
-
+	public void reset() {
+		this.stop();
+		labelClock.setText("00:00");
+	}
 	public void create()
  	{
 		Objth = new Thread(this);
@@ -46,14 +48,12 @@ class UserClock implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 		JFrame fr = new JFrame();
-
-	
 		labelClock = new JLabel();
-		labelClock.setBounds(10, 10, 80, 60);
+		labelClock.setBounds(5, 5, 80, 60);
 		labelClock.setFont(new Font("Sans Serif", Font.PLAIN, 30));
 	
 		
-		jFrame.setSize(100, 80);
+		jFrame.setSize(90, 70);
 
 		jFrame.setType(javax.swing.JFrame.Type.UTILITY); // don't display icon in tool bar in windows
 		jFrame.setUndecorated(true); // <-- the title bar is removed here
@@ -63,8 +63,16 @@ class UserClock implements Runnable {
 		
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		
-		if (clockKind == 1) jFrame.setLocation(dim.width - jFrame.getSize().width , jFrame.getSize().height+10);
+		if (clockKind == 1) {
+			Border border = BorderFactory.createLineBorder(Color.RED);
+			TitledBorder titleBorder = BorderFactory.createTitledBorder(border, "");
+			labelClock.setBorder(titleBorder);
+			jFrame.setLocation(dim.width - jFrame.getSize().width , jFrame.getSize().height+10);
+		}
 		else {
+			Border border = BorderFactory.createLineBorder(Color.GREEN);
+			TitledBorder titleBorder = BorderFactory.createTitledBorder(border, "");
+			labelClock.setBorder(titleBorder);
 			labelClock.setBackground(Color.lightGray);
 			labelClock.setOpaque(true);
 			jFrame.setLocation(dim.width - jFrame.getSize().width , dim.height - jFrame.getSize().height - 100);
@@ -73,21 +81,35 @@ class UserClock implements Runnable {
 		jFrame.setAlwaysOnTop(true);
 		jFrame.setVisible(true);
 		
-		
+		boolean orientation = true;
 		try {
 	            while (chk) {
-	                if (second > 0) second --;
+	                if (orientation) {
+		            	if (second > 0)  second --;
+		                else if (presentationMinutes > 0) {
+		                	second = 59;
+		                	presentationMinutes = presentationMinutes - 1;
+		                } else {
+		                	orientation = false;
+		                	second++;
+		                	labelClock.setForeground(Color.RED);
+		                } 
+	            	}
+	                
 	                else {
-	                	second = 60;
-	                	presentationMinutes = presentationMinutes - 1;
+	                	if (second < 59)  second ++;
+	                	else {
+	                		second = 0;
+	                		presentationMinutes ++;
+	                	}
 	                }
+	                
 	                labelClock.setText(((presentationMinutes  <= 9)? ("0" + presentationMinutes):presentationMinutes) + ":" + ((second <= 9)? "0"+second: second));
 	                Thread.sleep(1000);
 	            }
 	        } catch (InterruptedException e) {
 	            e.printStackTrace();
 	        }
-		
 	}
 	
 }
@@ -96,57 +118,10 @@ public class ClockExample extends JFrame {
 	UserClock cl1;
 	UserClock cl2;
 	ObjectInputStream ois = null;
+	Socket socket;
 
 	public ClockExample() {
-		Thread t1 = new Thread(() -> {
-			try {
-				// Socket s = new Socket(args[0],Integer.parseInt(args[1]));
-				
-				Socket socket = new Socket("127.0.0.1", 8189);
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				 BufferedReader kbd = new BufferedReader(new InputStreamReader(System.in));
-		         PrintWriter out = new PrintWriter(socket.getOutputStream(), true /* autoFlush */);
-		         System.out.println("Client");
-				// System.out.println(in.readLine());
-
-		         boolean done = false;
-		     
-					
-					System.out.println("lap");
-					while (!done){
-			            System.out.print("Client: ");
-					    //String fromClient = kbd.readLine();
-			            //out.println("Client: " + fromClient);
-			            String fromServer= in.readLine();
-						System.out.println(fromServer);
-						//if (fromServer.trim().equals("Server: BYE") || fromClient.equals("BYE"))  done = true;
-			        
-
-					
-					if (fromServer.equals("startPresentation")) {
-						JFrame jf = new JFrame();
-						cl1 = new UserClock(jf, 1, 5);
-						cl1.create();
-					} else if (fromServer.equals("stopPresentation")) {
-						cl1.stop();
-						JFrame jf2 = new JFrame();
-						cl2 = new UserClock(jf2, 2, 3);
-						cl2.create();
-					} else if (fromServer.equals("stopQuestion")) {
-						cl2.stop();
-					}
-					//ois.close();
-					}
-					
-				// socket.close();
-			} catch (Exception e) {
-				System.out.println(e);
-			}
-
-		});
-		t1.start();
 		// run this frame when receiving a msg from server
-		System.out.println("chay tiep");
 		if (!SystemTray.isSupported()) {
 			System.out.println("System tray is not supported !!! ");
 			return;
@@ -157,7 +132,7 @@ public class ClockExample extends JFrame {
 		// popupmenu
 		PopupMenu trayPopupMenu = new PopupMenu();
 		// 1t menuitem for popupmenu
-		MenuItem action = new MenuItem("Action");
+		MenuItem action = new MenuItem("IP config");
 		action.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -169,6 +144,72 @@ public class ClockExample extends JFrame {
 				JTextField jtfServerIP = new JTextField(20);
 				fr.add(jlbServerIP);
 				fr.add(jtfServerIP);
+				jtfServerIP.addKeyListener(new KeyListener() {
+
+					@Override
+					public void keyTyped(KeyEvent e) {
+
+					}
+
+					@Override
+					public void keyReleased(KeyEvent e) {
+						// TODO Auto-generated method stub
+						if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+							System.out.println("Enter");
+							fr.setVisible(false);
+							// Enter was pressed. Your code goes here.
+							Thread t1 = new Thread(() -> {
+								try {
+									socket = new Socket(jtfServerIP.getText(), 8189);
+									BufferedReader in = new BufferedReader(
+											new InputStreamReader(socket.getInputStream()));
+									BufferedReader kbd = new BufferedReader(new InputStreamReader(System.in));
+									PrintWriter out = new PrintWriter(socket.getOutputStream(), true /* autoFlush */);
+									System.out.println("Client");
+									// System.out.println(in.readLine());
+
+									boolean done = false;
+									while (!done) {
+										System.out.print("Client: ");
+										// String fromClient = kbd.readLine();
+										// out.println("Client: " + fromClient);
+										String fromServer = in.readLine();
+										System.out.println(fromServer);
+										// if (fromServer.trim().equals("Server: BYE") || fromClient.equals("BYE")) done
+										// = true;
+
+										if (fromServer.equals("startPresentation")) {
+											JFrame jf = new JFrame();
+											cl1 = new UserClock(jf, 1, 1);
+											cl1.create();
+										} else if (fromServer.equals("stopPresentation")) {
+											cl1.stop();
+											JFrame jf2 = new JFrame();
+											cl2 = new UserClock(jf2, 2, 1);
+											cl2.create();
+										} else if (fromServer.equals("stopQuestion")) {
+											cl2.stop();
+										} else if (fromServer.equals("reset")) {
+											cl1.reset();
+											cl2.reset();
+										}
+										// ois.close();
+									}
+								} catch (Exception ex) {
+									System.out.println(ex);
+								}
+
+							});
+							t1.start();
+						}
+					}
+
+					@Override
+					public void keyPressed(KeyEvent e) {
+						// TODO Auto-generated method stub
+
+					}
+				});
 				fr.setLocationRelativeTo(null);
 				// fr.setDefaultCloseOperation(EXIT_ON_CLOSE);
 				fr.setVisible(true);
