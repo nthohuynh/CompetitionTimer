@@ -1,7 +1,4 @@
 package vn.udn.vku.client;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.MenuItem;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.ActionEvent;
@@ -24,11 +21,13 @@ public class ClockExample extends JFrame {
         
         add(labelClock);
         setSize(100, 80);
-        
+       
+        setType(javax.swing.JFrame.Type.UTILITY); // don't display icon in tool bar in windows
         setUndecorated(true); // <-- the title bar is removed here
 
         setLayout(null);
-    //     dóng chương trình khi đóng của sổ
+        
+    //  dóng chương trình khi đóng của sổ
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -50,6 +49,10 @@ public class ClockExample extends JFrame {
             System.out.println("System tray is not supported !!! ");
             return ;
         }
+        
+        
+        
+        
         //get the systemTray of the system
         SystemTray systemTray = SystemTray.getSystemTray();
 
@@ -67,7 +70,20 @@ public class ClockExample extends JFrame {
         action.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Action Clicked");          
+                JFrame fr  = new JFrame();
+                fr.setSize(400,80);
+                
+                fr.setLayout(new FlowLayout());
+                JLabel jlbServerIP = new JLabel("Server IP Address ");
+                JTextField jtfServerIP = new JTextField(20);
+                fr.add(jlbServerIP);
+                fr.add(jtfServerIP);
+                fr.setLocationRelativeTo(null);
+                //fr.setDefaultCloseOperation(EXIT_ON_CLOSE);
+                fr.setVisible(true);
+              
+                
+            	//JOptionPane.showMessageDialog(null, "Action Clicked");          
             }
         });     
         trayPopupMenu.add(action);
@@ -93,7 +109,7 @@ public class ClockExample extends JFrame {
             awtException.printStackTrace();
         }
               
-        
+      
         try {
             while (true) {
                 if (second > 0) second --;
