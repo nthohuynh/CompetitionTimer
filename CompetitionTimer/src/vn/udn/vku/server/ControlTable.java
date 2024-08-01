@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableModel;
 
 public class ControlTable extends JPanel {
 	JLabel jlbPresentationTime;
@@ -67,6 +66,5 @@ public class ControlTable extends JPanel {
 		fr.setSize(600,200);
 		fr.add(new ControlTable());
 		fr.setVisible(true);
-		
 	}
 }
