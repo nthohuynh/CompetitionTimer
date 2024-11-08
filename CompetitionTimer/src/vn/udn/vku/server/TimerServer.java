@@ -19,6 +19,7 @@ public class TimerServer {
 	public TimerServer() {
 		try {
 			JFrame fr = new JFrame();
+			fr.setTitle("Control Board");
 			fr.setSize(600, 200);
 			ControlTable x = new ControlTable(out, in);
 			fr.add(x);
